@@ -68,7 +68,7 @@ void SigintHandler(int sig) {
 }
 
 int main(int argc, char** argv) {
-  if (!rclcpp::isInitialized()) {
+  if (!rclcpp::Context::is) {
     rclcpp::init(argc, argv);
   }
 

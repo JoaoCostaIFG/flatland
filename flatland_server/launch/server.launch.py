@@ -24,13 +24,13 @@ def generate_launch_description():
             DeclareLaunchArgument(name="show_viz", default_value="false"),
             DeclareLaunchArgument(name="viz_pub_rate", default_value="30.0"),
             DeclareLaunchArgument(name="use_rviz", default_value="false"),
-            #  Node(
-            #  package="flatland_viz",
-            #  executable="flatland_viz",
-            #  name="flatland_viz",
-            #  output="screen",
-            #  condition=conditions.IfCondition("$(var show_viz)"),
-            #  ),
+            Node(
+                package="flatland_viz",
+                executable="flatland_viz",
+                name="flatland_viz",
+                output="screen",
+                condition=conditions.IfCondition(LaunchConfiguration("show_viz")),
+            ),
             Node(
                 package="flatland_server",
                 name="flatland_server",
