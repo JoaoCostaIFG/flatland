@@ -60,7 +60,7 @@
 #include <map>
 #include <set>
 
-#include "flatland_msgs/msg/debug_topic_list.hpp"
+#include <flatland_msgs/msg/debug_topic_list.hpp>
 #include <rviz_common/config.hpp>
 #include <rviz_common/panel.hpp>
 #include <rviz_common/properties/property_tree_widget.hpp>
@@ -69,7 +69,6 @@
 #include <rviz_common/window_manager_interface.hpp>
 
 
-#include <rviz_common/new_object_dialog.hpp"
 #include <rviz_common/display.hpp>
 #include <rviz_common/render_panel.hpp>
 #include <rviz_common/view_manager.hpp>

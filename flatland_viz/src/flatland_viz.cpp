@@ -100,6 +100,8 @@ FlatlandViz::FlatlandViz(FlatlandWindow* parent) : QWidget((QWidget*)parent) {
   // very central and we will probably need one in every usage of
   // librviz.
   manager_ = new rviz_common::VisualizationManager(render_panel_);
+  // TODO fix
+  //manager_ = new rviz_common::VisualizationManager(render_panel_, nullptr, , rclcpp::Clock());
   render_panel_->initialize(manager_->getSceneManager(), manager_);
 
   // bind toolbar events
@@ -124,7 +126,8 @@ FlatlandViz::FlatlandViz(FlatlandWindow* parent) : QWidget((QWidget*)parent) {
 
   // Set view controller to top down
   manager_->getViewManager()->setCurrentViewControllerType("rviz/TopDownOrtho");
-  render_panel_->setBackgroundColor(Ogre::ColourValue(0.2, 0.2, 0.2));
+  // TODO fix
+  //render_panel_->setBackgroundColor(Ogre::ColourValue(0.2, 0.2, 0.2));
 
   // Create a Grid display.
   grid_ = manager_->createDisplay("rviz/Grid", "adjustable grid", true);
@@ -343,7 +346,7 @@ void FlatlandViz::onToolbarRemoveTool(QAction* remove_tool_menu_action) {
   for (int i = 0; i < manager_->getToolManager()->numTools(); i++) {
     rviz_common::Tool* tool = manager_->getToolManager()->getTool(i);
     if (tool->getName() == name) {
-      RCLCPP_ERROR_(rclcpp::get_logger("flatland_viz"), _STREAM("Removing --------> " << name.toStdString());
+      RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "Removing --------> ", name.toStdString().c_str());
       manager_->getToolManager()->removeTool(i);
       removeTool(tool);
       return;
