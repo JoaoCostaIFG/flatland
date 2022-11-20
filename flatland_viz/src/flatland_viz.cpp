@@ -102,8 +102,9 @@ FlatlandViz::FlatlandViz(FlatlandWindow* parent) : QWidget((QWidget*)parent) {
   // holds the main Ogre scene, holds the ViewController, etc.  It is
   // very central and we will probably need one in every usage of
   // librviz.
+
   manager_ = new rviz_common::VisualizationManager(render_panel_, ros_node_abs, nullptr, clock);
-  render_panel_->initialize(manager_->getSceneManager(), manager_);
+  render_panel_->initialize(manager_);
 
   // bind toolbar events
   rviz_common::ToolManager* tool_man = manager_->getToolManager();
