@@ -155,13 +155,8 @@ class FlatlandViz : public QWidget {
 
   void setDisplayConfigModified();
   void addTool(rviz_common::Tool*);
-  void removeTool(rviz_common::Tool*);
   void refreshTool(rviz_common::Tool*);
   void indicateToolIsCurrent(rviz_common::Tool*);
-  void onToolbarActionTriggered(QAction* action);
-  void onToolbarRemoveTool(QAction* remove_tool_menu_action);
-  void initToolbars();
-  void initMenus();
   void openNewToolDialog();
   void setFullScreen(bool full_screen);
 };

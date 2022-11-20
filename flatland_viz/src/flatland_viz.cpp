@@ -79,11 +79,6 @@ FlatlandViz::FlatlandViz(FlatlandWindow* parent) : QWidget((QWidget*)parent) {
   parent_ = parent;
   toolbar_ = parent->addToolBar("Tools");
 
-  // init toolbar action handler
-  initToolbars();
-
-  initMenus();
-
   // Construct and lay out render panel.
   render_panel_ = new rviz_common::RenderPanel();
   QVBoxLayout* main_layout = new QVBoxLayout;
@@ -111,8 +106,6 @@ FlatlandViz::FlatlandViz(FlatlandWindow* parent) : QWidget((QWidget*)parent) {
   connect(manager_, SIGNAL(configChanged()), this,
           SLOT(setDisplayConfigModified()));
   connect(tool_man, &rviz_common::ToolManager::toolAdded, this, &FlatlandViz::addTool);
-  connect(tool_man, SIGNAL(toolRemoved(rviz_common::Tool*)), this,
-          SLOT(removeTool(rviz_common::Tool*)));
   connect(tool_man, SIGNAL(toolRefreshed(rviz_common::Tool*)), this,
           SLOT(refreshTool(rviz_common::Tool*)));
   connect(tool_man, SIGNAL(toolChanged(rviz_common::Tool*)), this,
@@ -190,105 +183,6 @@ void FlatlandViz::addTool(rviz_common::Tool* tool) {
   tool_to_action_map_[tool] = action;
 
   remove_tool_menu_->addAction(tool->getName());
-}
-
-void FlatlandViz::removeTool(rviz_common::Tool* tool) {
-  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "removeTool called");
-  QAction* action = tool_to_action_map_[tool];
-  if (action) {
-    toolbar_actions_->removeAction(action);
-    toolbar_->removeAction(action);
-    tool_to_action_map_.erase(tool);
-    action_to_tool_map_.erase(action);
-  }
-  QString tool_name = tool->getName();
-  QList<QAction*> remove_tool_actions = remove_tool_menu_->actions();
-  for (int i = 0; i < remove_tool_actions.size(); i++) {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger("flatland_viz"), "Removing --------> " << tool_name.toStdString());
-    QAction* removal_action = remove_tool_actions.at(i);
-    if (removal_action->text() == tool_name) {
-      remove_tool_menu_->removeAction(removal_action);
-      break;
-    }
-  }
-}
-
-void FlatlandViz::initMenus() {
-  file_menu_ = parent_->menuBar()->addMenu("&File");
-
-  QAction* file_menu_open_action = file_menu_->addAction(
-      "&Open Config", this, SLOT(onOpen()), QKeySequence("Ctrl+O"));
-  this->addAction(file_menu_open_action);
-  QAction* file_menu_save_action = file_menu_->addAction(
-      "&Save Config", this, SLOT(onSave()), QKeySequence("Ctrl+S"));
-  this->addAction(file_menu_save_action);
-  QAction* file_menu_save_as_action = file_menu_->addAction(
-      "Save Config &As", this, SLOT(onSaveAs()), QKeySequence("Ctrl+Shift+S"));
-  this->addAction(file_menu_save_as_action);
-
-  recent_configs_menu_ = file_menu_->addMenu("&Recent Configs");
-  file_menu_->addAction("Save &Image", this, SLOT(onSaveImage()));
-  if (show_choose_new_master_option_) {
-    file_menu_->addSeparator();
-    file_menu_->addAction("Change &Master", this, SLOT(changeMaster()));
-  }
-  file_menu_->addSeparator();
-
-  QAction* file_menu_quit_action = file_menu_->addAction(
-      "&Quit", this, SLOT(close()), QKeySequence("Ctrl+Q"));
-  this->addAction(file_menu_quit_action);
-
-  view_menu_ = parent_->menuBar()->addMenu("&Panels");
-  view_menu_->addAction("Add &New Panel", this, SLOT(openNewPanelDialog()));
-  delete_view_menu_ = view_menu_->addMenu("&Delete Panel");
-  delete_view_menu_->setEnabled(false);
-
-  QAction* fullscreen_action = view_menu_->addAction(
-      "&Fullscreen", this, SLOT(setFullScreen(bool)), Qt::Key_F11);
-  fullscreen_action->setCheckable(true);
-  this->addAction(fullscreen_action);  // Also add to window, or the shortcut
-                                       // doest work when the menu is hidden.
-
-  // connect(this, SIGNAL(fullScreenChange(bool)), fullscreen_action,
-  //        SLOT(setChecked(bool)));
-  new QShortcut(Qt::Key_Escape, this, SLOT(exitFullScreen()));
-  view_menu_->addSeparator();
-
-  QMenu* help_menu = parent_->menuBar()->addMenu("&Help");
-  help_menu->addAction("Show &Help panel", this, SLOT(showHelpPanel()));
-  help_menu->addAction("Open rviz wiki in browser", this, SLOT(onHelpWiki()));
-  help_menu->addSeparator();
-  help_menu->addAction("&About", this, SLOT(onHelpAbout()));
-}
-
-void FlatlandViz::initToolbars() {
-  // TODO STOPPED HERE
-  remove_tool_menu_ = new QMenu();
-  QToolButton* remove_tool_button = new QToolButton();
-  remove_tool_button->setMenu(remove_tool_menu_);
-  remove_tool_button->setPopupMode(QToolButton::InstantPopup);
-  remove_tool_button->setToolTip("Remove a tool from the toolbar");
-  remove_tool_button->setIcon(
-      rviz_common::loadPixmap("package://rviz_common/icons/minus.png"));
-  toolbar_->addWidget(remove_tool_button);
-
-  connect(remove_tool_menu_, &QMenu::triggered, this,
-          &FlatlandViz::onToolbarRemoveTool);
-}
-
-void FlatlandViz::onToolbarRemoveTool(QAction* remove_tool_menu_action) {
-  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "onToolbarRemoveTool called");
-  QString name = remove_tool_menu_action->text();
-
-  for (int i = 0; i < manager_->getToolManager()->numTools(); i++) {
-    rviz_common::Tool* tool = manager_->getToolManager()->getTool(i);
-    if (tool->getName() == name) {
-      RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "%s %s", "Removing -------->", name.toStdString().c_str());
-      manager_->getToolManager()->removeTool(i);
-      removeTool(tool);
-      return;
-    }
-  }
 }
 
 void FlatlandViz::refreshTool(rviz_common::Tool* tool) {

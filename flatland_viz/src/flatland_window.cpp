@@ -353,8 +353,8 @@ void FlatlandWindow::initMenus()
       "&Fullscreen", this, SLOT(
       setFullScreen(bool)), Qt::Key_F11);
   fullscreen_action->setCheckable(true);
-  this->addAction(fullscreen_action);  // Also add to window, or the shortcut doest work
-  // when the menu is hidden.
+  // Also add to window, or the shortcut doest work when the menu is hidden
+  this->addAction(fullscreen_action);
   connect(this, SIGNAL(fullScreenChange(bool)), fullscreen_action, SLOT(setChecked(bool)));
   new QShortcut(Qt::Key_Escape, this, SLOT(exitFullScreen()));
   view_menu_->addSeparator();
@@ -818,7 +818,9 @@ void FlatlandWindow::onToolbarActionTriggered(QAction * action)
 
 void FlatlandWindow::onToolbarRemoveTool(QAction * remove_tool_menu_action)
 {
+  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "onToolbarRemoveTool called");
   QString name = remove_tool_menu_action->text();
+
   for (int i = 0; i < manager_->getToolManager()->numTools(); i++) {
     Tool * tool = manager_->getToolManager()->getTool(i);
     if (tool->getName() == name) {
@@ -830,6 +832,7 @@ void FlatlandWindow::onToolbarRemoveTool(QAction * remove_tool_menu_action)
 
 void FlatlandWindow::removeTool(Tool * tool)
 {
+  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "removeTool called");
   QAction * action = tool_to_action_map_[tool];
   if (action) {
     toolbar_actions_->removeAction(action);
@@ -842,6 +845,7 @@ void FlatlandWindow::removeTool(Tool * tool)
   for (int i = 0; i < remove_tool_actions.size(); i++) {
     QAction * removal_action = remove_tool_actions.at(i);
     if (removal_action->text() == tool_name) {
+      RCLCPP_ERROR_STREAM(rclcpp::get_logger("flatland_viz"), "Removing --------> " << tool_name.toStdString());
       remove_tool_menu_->removeAction(removal_action);
       break;
     }
