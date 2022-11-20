@@ -63,10 +63,12 @@
 #include <rviz_rendering/viewport_projection_finder.hpp>
 
 
-#include <OGRE/OgreEntity.h>
-//#include <OGRE/OgreException.h>
-#include <OGRE/OgreMaterial.h>
-#include <OGRE/OgreSubEntity.h>
+#include <OgreEntity.h>
+//#include <OgreException.h>
+#include <OgreMaterial.h>
+#include <OgreSubEntity.h>
+#include <OgreTechnique.h>
+#include <OgreSceneNode.h>
 
 #include <boost/filesystem.hpp>
 
@@ -115,8 +117,8 @@ void SpawnModelTool::onInitialize() {
   // make an arrow to show axis of rotation
   arrow_ = new rviz_rendering::Arrow(scene_manager_, NULL, 2.0f, 0.2f, 0.3f, 0.35f);
   arrow_->setColor(0.0f, 0.0f, 1.0f, 1.0f);  // blue
-  arrow_->getSceneNode()->setVisible(
-      false);  // will only be visible during rotation phase
+  // will only be visible during rotation phase
+  arrow_->getSceneNode()->setVisible(false);
 
   // set arrow to point up (along z)
   Ogre::Quaternion orientation(Ogre::Radian(M_PI), Ogre::Vector3(1, 0, 0));

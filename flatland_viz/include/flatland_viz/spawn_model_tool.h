@@ -54,11 +54,10 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <OGRE/OgreEntity.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreVector3.h>
-//#include <OgreVector3.h>
+#include <OgreEntity.h>
+#include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
+#include <OgreVector3.h>
 
 #include <flatland_server/yaml_reader.h>
 #include <flatland_msgs/srv/spawn_model.hpp>

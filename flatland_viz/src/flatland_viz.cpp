@@ -330,6 +330,8 @@ void FlatlandViz::openNewToolDialog() {
   QStringList empty;
   rviz_common::ToolManager* tool_man = manager_->getToolManager();
 
+  // TODO fix
+  /*
   rviz_common::NewObjectDialog* dialog =
       new rviz_common::NewObjectDialog(tool_man->getFactory(), "Tool", empty,
                                 tool_man->getToolClasses(), &class_id);
@@ -339,6 +341,7 @@ void FlatlandViz::openNewToolDialog() {
   }
   manager_->startUpdate();
   activateWindow();  // Force keyboard focus back on main window.
+   */
 }
 
 void FlatlandViz::onToolbarRemoveTool(QAction* remove_tool_menu_action) {

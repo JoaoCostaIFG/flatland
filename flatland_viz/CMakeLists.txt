@@ -41,36 +41,6 @@ find_package(Boost REQUIRED COMPONENTS date_time system filesystem)
 #    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
 #endif()
 
-########################
-## Ogre Include Stuff ##
-########################
-
-find_package(PkgConfig REQUIRED)
-
-pkg_check_modules(OGRE_OV OGRE OGRE-Overlay)
-
-# Old versions of OGRE (pre 1.9) included OGRE-Overlay in the main package
-# (i.e. there was no OGRE-Overlay component).  So if the above
-# pkg_check_modules() failed, try looking for just OGRE.
-if(NOT OGRE_OV_FOUND)
-  pkg_check_modules(OGRE_OV REQUIRED OGRE)
-endif(NOT OGRE_OV_FOUND)
-
-###################################
-## catkin specific configuration ##
-###################################
-#catkin_package(
-#  INCLUDE_DIRS include ${OGRE_OV_INCLUDE_DIRS}
-#  CATKIN_DEPENDS roscpp rviz flatland_server
-#)
-
-
-###########
-## Build ##
-###########
-
-include_directories(include ${OGRE_OV_INCLUDE_DIRS})
-
 
 
 #link_directories(${catkin_LIBRARY_DIRS})
@@ -107,8 +77,7 @@ add_executable(flatland_viz
 target_include_directories(flatland_viz
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>    
-    ${OGRE_OV_INCLUDE_DIRS})
+    $<INSTALL_INTERFACE:include>)
 
 
 #add_dependencies(flatland_viz ${catkin_EXPORTED_TARGETS})
@@ -135,8 +104,7 @@ add_library(flatland_viz_plugins
 target_include_directories(flatland_viz_plugins
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-    ${OGRE_OV_INCLUDE_DIRS})
+    $<INSTALL_INTERFACE:include>)
 
 #add_dependencies(flatland_viz_plugins ${catkin_EXPORTED_TARGETS})
 ament_target_dependencies(flatland_viz_plugins rclcpp flatland_msgs flatland_server rviz_common rviz_rendering rviz_default_plugins std_srvs)
