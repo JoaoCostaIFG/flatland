@@ -76,8 +76,8 @@ int main(int argc, char** argv) {
   QApplication app(argc, argv);
 
   auto ros_node = std::make_shared<rviz_common::ros_integration::RosNodeAbstraction>("flatland_viz");
-  auto window = new FlatlandWindow(ros_node);
-  //auto window = new rviz_common::VisualizationFrame(ros_node);
+
+  window = new FlatlandWindow(ros_node);
   window->setApp(&app);
   window->initialize(ros_node);
   window->show();

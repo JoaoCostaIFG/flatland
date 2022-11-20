@@ -791,7 +791,10 @@ void FlatlandWindow::addTool(Tool * tool)
 
 void FlatlandWindow::onToolbarActionTriggered(QAction * action)
 {
-  Tool * tool = action_to_tool_map_[action];
+  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "onToolbarActionTriggered called");
+
+  Tool* current_tool = manager_->getToolManager()->getCurrentTool();
+  Tool* tool = action_to_tool_map_[action];
 
   if (tool) {
     manager_->getToolManager()->setCurrentTool(tool);

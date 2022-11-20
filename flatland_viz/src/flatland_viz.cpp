@@ -193,8 +193,6 @@ void FlatlandViz::addTool(rviz_common::Tool* tool) {
 }
 
 void FlatlandViz::onToolbarActionTriggered(QAction* action) {
-  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "onToolbarActionTriggered called");
-
   rviz_common::Tool* current_tool = manager_->getToolManager()->getCurrentTool();
   rviz_common::Tool* tool = action_to_tool_map_[action];
 
@@ -289,16 +287,6 @@ void FlatlandViz::initMenus() {
 }
 
 void FlatlandViz::initToolbars() {
-  QFont font;
-  font.setPointSize(font.pointSizeF() * 0.9);
-
-  // make toolbar with plugin tools
-
-  toolbar_->setFont(font);
-  toolbar_->setContentsMargins(0, 0, 0, 0);
-  toolbar_->setObjectName("Tools");
-  toolbar_->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-  toolbar_actions_ = new QActionGroup(this);
   connect(toolbar_actions_, &QActionGroup::triggered, this,
           &FlatlandViz::onToolbarActionTriggered);
 
