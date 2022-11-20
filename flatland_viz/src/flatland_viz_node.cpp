@@ -48,7 +48,7 @@
 #include <signal.h>
 #include <QApplication>
 #include "flatland_viz/flatland_window.h"
-#include "flatland_viz/flatland_window2.h"
+#include <rviz_common/visualization_frame.hpp>
 
 FlatlandWindow* window = nullptr;
 
@@ -76,9 +76,10 @@ int main(int argc, char** argv) {
   QApplication app(argc, argv);
 
   auto ros_node = std::make_shared<rviz_common::ros_integration::RosNodeAbstraction>("flatland_viz");
-  //window = new FlatlandWindow(ros_node);
-  FlatlandWindow2* window = new FlatlandWindow2(ros_node);
+  auto window = new FlatlandWindow(ros_node);
+  //auto window = new rviz_common::VisualizationFrame(ros_node);
   window->setApp(&app);
+  window->initialize(ros_node);
   window->show();
 
   // Register sigint shutdown handler
