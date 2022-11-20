@@ -57,6 +57,10 @@
 
 #include "flatland_viz/spawn_model_tool.h"
 
+#include <rviz_common/viewport_mouse_event.hpp>
+#include <rviz_common/render_panel.hpp>
+#include <rviz_rendering/viewport_projection_finder.hpp>
+
 
 #include <OGRE/OgreEntity.h>
 //#include <OGRE/OgreException.h>
@@ -242,8 +246,11 @@ int SpawnModelTool::processMouseEvent(rviz_common::ViewportMouseEvent &event) {
   Ogre::Plane ground_plane(Ogre::Vector3::UNIT_Z, 0.0f);
 
   if (model_state == m_dragging) {
-    if (rviz_rendering::getPointOnPlaneFromWindowXY (event.viewport, ground_plane, event.x,
-                                          event.y, intersection)) {
+    auto intersectionPair = rviz_rendering::ViewportProjectionFinder().getViewportPointProjectionOnXYPlane(event.panel->getRenderWindow(),
+                                                                                       event.x,
+                                                                                       event.y);
+    intersection = intersectionPair.second;
+    if (intersectionPair.first) {
       moving_model_node_->setVisible(true);
       moving_model_node_->setPosition(intersection);
 
@@ -261,9 +268,11 @@ int SpawnModelTool::processMouseEvent(rviz_common::ViewportMouseEvent &event) {
     }
   }
   if (model_state == m_rotating) {  // model_state is m_rotating
-
-    if (rviz_rendering::getPointOnPlaneFromWindowXY(event.viewport, ground_plane, event.x,
-                                          event.y, intersection2)) {
+    auto intersectionPair = rviz_rendering::ViewportProjectionFinder().getViewportPointProjectionOnXYPlane(event.panel->getRenderWindow(),
+                                                                                                           event.x,
+                                                                                                           event.y);
+    intersection2 = intersectionPair.second;
+    if (intersectionPair.first) {
       if (event.leftDown()) {
         model_state = m_hidden;
         arrow_->getSceneNode()->setVisible(false);
