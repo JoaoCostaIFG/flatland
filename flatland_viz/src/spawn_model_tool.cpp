@@ -359,8 +359,7 @@ void SpawnModelTool::LoadPolygonFootprint(
     lines->addPoint(Ogre::Vector3(p.x, p.y, 0.));
   }
   if (points.size() > 0) {
-    lines->addPoint(
-    //    Ogre::Vector3(points.at(0).x, points.at(0).y, 0.));  // Close the box
+    lines->addPoint(Ogre::Vector3(points.at(0).x, points.at(0).y, 0.));  // Close the box
   }
 }
 
