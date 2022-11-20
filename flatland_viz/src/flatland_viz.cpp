@@ -192,31 +192,6 @@ void FlatlandViz::addTool(rviz_common::Tool* tool) {
   remove_tool_menu_->addAction(tool->getName());
 }
 
-void FlatlandViz::onToolbarActionTriggered(QAction* action) {
-  rviz_common::Tool* current_tool = manager_->getToolManager()->getCurrentTool();
-  rviz_common::Tool* tool = action_to_tool_map_[action];
-
-  if (tool) {
-    manager_->getToolManager()->setCurrentTool(tool);
-
-    // If the simulation pause/resume tool was clicked, automatically and
-    // immediately switch back to the previously active tool
-    if (tool->getClassId().toStdString() == "flatland_viz/PauseSim") {
-      manager_->getToolManager()->setCurrentTool(current_tool);
-      tool = current_tool;
-      indicateToolIsCurrent(tool);
-    }
-
-    // Show or hide interactive markers depending on whether interact mode is
-    // active
-    if (tool->getClassId().toStdString() == "rviz/Interact") {
-      interactive_markers_->setEnabled(true);
-    } else {
-      interactive_markers_->setEnabled(false);
-    }
-  }
-}
-
 void FlatlandViz::removeTool(rviz_common::Tool* tool) {
   RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "removeTool called");
   QAction* action = tool_to_action_map_[tool];
@@ -287,17 +262,7 @@ void FlatlandViz::initMenus() {
 }
 
 void FlatlandViz::initToolbars() {
-  connect(toolbar_actions_, &QActionGroup::triggered, this,
-          &FlatlandViz::onToolbarActionTriggered);
-
-  add_tool_action_ = new QAction("", toolbar_actions_);
-  add_tool_action_->setToolTip("Add a new tool");
-  add_tool_action_->setIcon(rviz_common::loadPixmap("package://rviz_common/icons/plus.png"));
-  toolbar_->addAction(add_tool_action_);
-
-  connect(add_tool_action_, &QAction::triggered, this,
-          &FlatlandViz::openNewToolDialog);
-
+  // TODO STOPPED HERE
   remove_tool_menu_ = new QMenu();
   QToolButton* remove_tool_button = new QToolButton();
   remove_tool_button->setMenu(remove_tool_menu_);
@@ -309,26 +274,6 @@ void FlatlandViz::initToolbars() {
 
   connect(remove_tool_menu_, &QMenu::triggered, this,
           &FlatlandViz::onToolbarRemoveTool);
-}
-
-void FlatlandViz::openNewToolDialog() {
-  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "openNewToolDialog called");
-  QString class_id;
-  QStringList empty;
-  rviz_common::ToolManager* tool_man = manager_->getToolManager();
-
-  // TODO fix
-  /*
-  rviz_common::NewObjectDialog* dialog =
-      new rviz_common::NewObjectDialog(tool_man->getFactory(), "Tool", empty,
-                                tool_man->getToolClasses(), &class_id);
-  manager_->stopUpdate();
-  if (dialog->exec() == QDialog::Accepted) {
-    tool_man->addTool(class_id);
-  }
-  manager_->startUpdate();
-  activateWindow();  // Force keyboard focus back on main window.
-   */
 }
 
 void FlatlandViz::onToolbarRemoveTool(QAction* remove_tool_menu_action) {

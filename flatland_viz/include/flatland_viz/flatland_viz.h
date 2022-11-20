@@ -115,6 +115,10 @@ class FlatlandViz : public QWidget {
    */
   virtual ~FlatlandViz();
 
+  void enableInteractiveMarkers(bool enabled) {
+    this->interactive_markers_->setEnabled(enabled);
+  }
+
   rviz_common::VisualizationManager* manager_;
 
  private:

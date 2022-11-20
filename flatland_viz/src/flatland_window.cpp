@@ -423,6 +423,8 @@ void FlatlandWindow::hideDockImpl(Qt::DockWidgetArea area, bool hide)
 
 void FlatlandWindow::openNewToolDialog()
 {
+  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "openNewToolDialog called");
+
   QString class_id;
   QStringList empty;
   ToolManager * tool_man = manager_->getToolManager();
@@ -434,9 +436,11 @@ void FlatlandWindow::openNewToolDialog()
       empty,
       tool_man->getToolClasses(),
       &class_id);
+  manager_->stopUpdate();
   if (dialog->exec() == QDialog::Accepted) {
     tool_man->addTool(class_id);
   }
+  manager_->startUpdate();
    */
   activateWindow();  // Force keyboard focus back on main window.
 }
@@ -796,9 +800,20 @@ void FlatlandWindow::onToolbarActionTriggered(QAction * action)
   Tool* current_tool = manager_->getToolManager()->getCurrentTool();
   Tool* tool = action_to_tool_map_[action];
 
-  if (tool) {
-    manager_->getToolManager()->setCurrentTool(tool);
+  if (!tool) return;
+  manager_->getToolManager()->setCurrentTool(tool);
+
+  // If the simulation pause/resume tool was clicked, automatically and
+  // immediately switch back to the previously active tool
+  if (tool->getClassId().toStdString() == "flatland_viz/PauseSim") {
+    manager_->getToolManager()->setCurrentTool(current_tool);
+    tool = current_tool;
+    indicateToolIsCurrent(tool);
   }
+
+  // Show or hide interactive markers depending on whether interact mode is
+  // active
+  viz_->enableInteractiveMarkers(tool->getClassId().toStdString() == "rviz/Interact");
 }
 
 void FlatlandWindow::onToolbarRemoveTool(QAction * remove_tool_menu_action)

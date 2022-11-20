@@ -22,6 +22,8 @@
 #include <rviz_common/panel.hpp>
 #include <QLabel>
 
+#include "flatland_viz/flatland_viz.h"
+
 using namespace rviz_common;
 
 /// The main window.
@@ -299,6 +301,8 @@ class FlatlandWindow : public QMainWindow, public rviz_common::WindowManagerInte
   /// Hide or show the given dock area based on the hide bool.
   void
   hideDockImpl(Qt::DockWidgetArea area, bool hide);
+
+  FlatlandViz * viz_;
 
   /// Parent QApplication, set by setApp().
   QApplication * app_;
