@@ -93,15 +93,16 @@ FlatlandViz::FlatlandViz(FlatlandWindow* parent) : QWidget((QWidget*)parent) {
   // Set the top-level layout for this FlatlandViz widget.
   setLayout(main_layout);
 
+  auto ros_node_abs = std::make_shared<rviz_common::ros_integration::RosNodeAbstraction>("flatland_viz");
+  auto clock = ros_node_abs->get_raw_node()->get_clock();
+
   // Next we initialize the main RViz classes.
   //
   // The VisualizationManager is the container for Display objects,
   // holds the main Ogre scene, holds the ViewController, etc.  It is
   // very central and we will probably need one in every usage of
   // librviz.
-  manager_ = new rviz_common::VisualizationManager(render_panel_);
-  // TODO fix
-  //manager_ = new rviz_common::VisualizationManager(render_panel_, nullptr, , rclcpp::Clock());
+  manager_ = new rviz_common::VisualizationManager(render_panel_, ros_node_abs, nullptr, clock);
   render_panel_->initialize(manager_->getSceneManager(), manager_);
 
   // bind toolbar events
