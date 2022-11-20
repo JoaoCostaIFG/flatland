@@ -52,16 +52,29 @@ void FlatlandWindow::openNewToolDialog() {
   QStringList empty;
 }
 
-rviz_common::VisualizationManager *FlatlandWindow::getManager() {
-  return visualization_manager_;
-}
+FlatlandWindow::FlatlandWindow(rviz_common::ros_integration::RosNodeAbstractionIface::WeakPtr ros_node, QWidget *parent)
+    : QMainWindow(parent) {
+  render_panel_ = new rviz_common::RenderPanel();
+  QVBoxLayout* main_layout = new QVBoxLayout;
+  main_layout->setMargin(0);
+  main_layout->addWidget(render_panel_);
 
-FlatlandWindow::FlatlandWindow(QWidget *parent) : QMainWindow(parent) {
+  auto clock = ros_node.lock()->get_raw_node()->get_clock();
+
+  visualization_manager_ = new rviz_common::VisualizationManager(render_panel_, ros_node, this, clock);
+  render_panel_->initialize(visualization_manager_);
+
+  // Set the top-level layout for this FlatlandViz widget.
+  setLayout(main_layout);
+
+  visualization_manager_->initialize();
+
   // Create the main viewport
-  viz_ = new FlatlandViz(this);
-  setCentralWidget(viz_);
-  resize(QDesktopWidget().availableGeometry(this).size() * 0.9);
+  //viz_ = new FlatlandViz(this);
+  //setCentralWidget(viz_);
+  //resize(QDesktopWidget().availableGeometry(this).size() * 0.9);
 
-  // Set the main window properties
+  visualization_manager_->startUpdate();
+
   setWindowTitle("Flatland Viz");
 }

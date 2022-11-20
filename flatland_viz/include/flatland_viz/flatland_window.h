@@ -69,18 +69,51 @@
 
 #include <rviz_common/render_panel.hpp>
 #include <rviz_common/visualization_manager.hpp>
+#include <rviz_common/window_manager_interface.hpp>
+#include <rviz_common/panel_dock_widget.hpp>
 
-class FlatlandWindow : public QMainWindow {
+class FlatlandWindow : public QMainWindow, public rviz_common::WindowManagerInterface {
   Q_OBJECT
  public:
-  FlatlandWindow(QWidget* parent = 0);
   rviz_common::VisualizationManager* visualization_manager_;
   rviz_common::RenderPanel* render_panel_;
 
-  rviz_common::VisualizationManager* getManager();
+  FlatlandWindow(rviz_common::ros_integration::RosNodeAbstractionIface::WeakPtr ros_node, QWidget* parent = 0);
+
+  // Destructor.
+  ~FlatlandWindow() {
+    delete render_panel_;
+    delete visualization_manager_;
+  }
+
+  QWidget *
+  getParentWindow() override {
+    return 0;
+  }
+
+  /// Add a pane to the visualizer.
+  /**
+   * To remove a pane, delete it.
+   * Other operations can also be done directly to the PanelDockWidget:
+   * show(), hide(), close(), etc.
+   */
+  rviz_common::PanelDockWidget *
+  addPane(
+      const QString & name,
+      QWidget * pane,
+      Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
+      bool floating = true) override {
+    // TODO
+    return nullptr;
+  }
+
+  /// Set the message displayed in the status bar.
+  void
+  setStatus(const QString &message) override {
+    setWindowTitle(message);
+  }
 
  protected Q_SLOTS:
-
   void openNewToolDialog();
 
  private:

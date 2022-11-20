@@ -64,6 +64,8 @@ add_executable(flatland_viz
   include/flatland_viz/flatland_viz.h
   src/flatland_window.cpp
   include/flatland_viz/flatland_window.h
+  src/flatland_window2.cpp
+  include/flatland_viz/flatland_window2.h
   src/load_model_dialog.cpp
   include/flatland_viz/load_model_dialog.h
   src/spawn_model_tool.cpp

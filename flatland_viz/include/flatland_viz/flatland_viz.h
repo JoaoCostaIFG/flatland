@@ -110,16 +110,7 @@ class FlatlandViz : public QWidget {
    */
   void RecieveDebugTopics(const flatland_msgs::msg::DebugTopicList::SharedPtr msg);
 
-  /**
-   * @brief Destruct
-   */
-  virtual ~FlatlandViz();
-
-  rviz_common::VisualizationManager* manager_;
-
  private:
-  rviz_common::RenderPanel* render_panel_;
-
   rviz_common::Display* grid_;
   rviz_common::Display* interactive_markers_;
   std::map<std::string, rviz_common::Display*> debug_displays_;
