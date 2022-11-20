@@ -76,59 +76,6 @@
 
 // Constructor.
 FlatlandViz::FlatlandViz(FlatlandWindow* parent) : QWidget((QWidget*)parent) {
-  parent_ = parent;
-  toolbar_ = parent->addToolBar("Tools");
-
-  // Construct and lay out render panel.
-  render_panel_ = new rviz_common::RenderPanel();
-  QVBoxLayout* main_layout = new QVBoxLayout;
-  main_layout->setMargin(0);
-  main_layout->addWidget(render_panel_);
-
-  // Set the top-level layout for this FlatlandViz widget.
-  setLayout(main_layout);
-
-  auto ros_node = std::make_shared<rviz_common::ros_integration::RosNodeAbstraction>("flatland_viz");
-  auto clock = ros_node->get_raw_node()->get_clock();
-
-  // Next we initialize the main RViz classes.
-  //
-  // The VisualizationManager is the container for Display objects,
-  // holds the main Ogre scene, holds the ViewController, etc.  It is
-  // very central and we will probably need one in every usage of
-  // librviz.
-  manager_ = new rviz_common::VisualizationManager(render_panel_, ros_node, nullptr, clock);
-  render_panel_->initialize(manager_);
-
-  // bind toolbar events
-  rviz_common::ToolManager* tool_man = manager_->getToolManager();
-
-  manager_->initialize();
-
-  tool_man->addTool("flatland_viz/SpawnModel");
-  tool_man->addTool("flatland_viz/PauseSim");
-
-  manager_->startUpdate();
-
-  // Set view controller to top down
-  manager_->getViewManager()->setCurrentViewControllerType("rviz/TopDownOrtho");
-  // TODO fix
-  //render_panel_->setBackgroundColor(Ogre::ColourValue(0.2, 0.2, 0.2));
-
-  // Create a Grid display.
-  grid_ = manager_->createDisplay("rviz/Grid", "adjustable grid", true);
-  if (grid_ == nullptr) {
-    RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Grid failed to instantiate");
-    exit(1);
-  }
-
-  // Configure the GridDisplay the way we like it.
-  grid_->subProp("Line Style")->setValue("Lines");
-  grid_->subProp("Color")->setValue(QColor(Qt::white));
-  grid_->subProp("Cell Size")->setValue(1.0);
-  grid_->subProp("Plane Cell Count")->setValue(100);
-  grid_->subProp("Alpha")->setValue(0.1);
-
   // Create interactive markers display
   interactive_markers_ =
       manager_->createDisplay("rviz/InteractiveMarkers", "Move Objects", false);

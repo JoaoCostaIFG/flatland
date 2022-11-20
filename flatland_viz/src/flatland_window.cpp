@@ -169,13 +169,12 @@ void FlatlandWindow::initialize(
   if (app_) {app_->processEvents();}
 
   QWidget * central_widget = new QWidget(this);
-  QHBoxLayout * central_layout = new QHBoxLayout;
-  central_layout->setSpacing(0);
-  central_layout->setMargin(0);
-
   render_panel_ = new RenderPanel(central_widget);
 
-  central_layout->addWidget(render_panel_, 1);
+  QVBoxLayout * central_layout = new QVBoxLayout;
+  central_layout->setSpacing(0);
+  central_layout->setMargin(0);
+  central_layout->addWidget(render_panel_); /* TODO should this use stretch: 1 ? */
 
   central_widget->setLayout(central_layout);
 
@@ -223,11 +222,29 @@ void FlatlandWindow::initialize(
   // Periodically process events for the splash screen.
   if (app_) {app_->processEvents();}
 
-  if (display_config_file != "") {
-    loadDisplayConfig(display_config_file);
-  } else {
-    loadDisplayConfig(QString::fromStdString(default_display_config_file_));
+  loadDisplayConfig((display_config_file != "") ?
+                    display_config_file :
+                    QString::fromStdString(default_display_config_file_));
+
+  // TODO
+  //tool_man->addTool("flatland_viz/SpawnModel");
+  //tool_man->addTool("flatland_viz/PauseSim");
+
+  // Setup camera
+  manager_->getViewManager()->setCurrentViewControllerType("rviz_default_plugins/TopDownOrtho");
+
+  // Create a Grid display.
+  grid_ = manager_->createDisplay("rviz_default_plugins/Grid", "adjustable grid", true);
+  if (grid_ == nullptr) {
+    RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Grid failed to instantiate");
+    exit(1);
   }
+  // Configure the GridDisplay the way we like it.
+  grid_->subProp("Line Style")->setValue("Lines");
+  grid_->subProp("Color")->setValue(QColor(Qt::white));
+  grid_->subProp("Cell Size")->setValue(1.0);
+  grid_->subProp("Plane Cell Count")->setValue(100);
+  grid_->subProp("Alpha")->setValue(0.1);
 
   // Periodically process events for the splash screen.
   if (app_) {app_->processEvents();}

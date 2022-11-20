@@ -303,6 +303,7 @@ class FlatlandWindow : public QMainWindow, public rviz_common::WindowManagerInte
   hideDockImpl(Qt::DockWidgetArea area, bool hide);
 
   FlatlandViz * viz_;
+  rviz_common::Display* grid_;
 
   /// Parent QApplication, set by setApp().
   QApplication * app_;
