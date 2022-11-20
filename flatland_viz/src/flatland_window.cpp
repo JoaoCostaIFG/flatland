@@ -6,7 +6,6 @@
 #include <string>
 
 #include <OgreRenderWindow.h>
-#include <OgreMeshManager.h>
 #include <OgreMaterialManager.h>
 
 #include <QApplication>  // NOLINT cpplint cannot handle include order here
@@ -37,7 +36,7 @@
 #include <rviz_common/visualization_manager.hpp>
 #include <rviz_rendering/render_window.hpp>
 
-#define CONFIG_EXTENSION "rviz"
+#define CONFIG_EXTENSION "flatland"
 #define CONFIG_EXTENSION_WILDCARD "*." CONFIG_EXTENSION
 #define RECENT_CONFIG_COUNT 10
 
@@ -69,8 +68,6 @@ FlatlandWindow::FlatlandWindow(
   connect(post_load_timer_, SIGNAL(timeout()), this, SLOT(markLoadingDone()));
 
   package_path_ = ament_index_cpp::get_package_share_directory("rviz_common");
-  QDir help_path(QString::fromStdString(package_path_) + "/help/help.html");
-  help_path_ = help_path.absolutePath();
   QDir splash_path(QString::fromStdString(package_path_) + "/images/splash.png");
   splash_path_ = splash_path.absolutePath();
 
@@ -84,7 +81,7 @@ FlatlandWindow::FlatlandWindow(
   statusBar()->addPermanentWidget(fps_label_, 0);
   original_status_bar_ = statusBar();
 
-  setWindowTitle("RViz[*]");
+  setWindowTitle("Flatland Viz");
 }
 
 FlatlandWindow::~FlatlandWindow()
@@ -137,12 +134,6 @@ void FlatlandWindow::leaveEvent(QEvent * event)
 {
   Q_UNUSED(event);
   setStatus("");
-}
-
-void FlatlandWindow::setHelpPath(const QString & help_path)
-{
-  help_path_ = help_path;
-  manager_->setHelpPath(help_path_);
 }
 
 void FlatlandWindow::setSplashPath(const QString & splash_path)
@@ -206,13 +197,10 @@ void FlatlandWindow::initialize(
   // Periodically process events for the splash screen.
   if (app_) {app_->processEvents();}
 
-  // TODO(wjwwood): sort out the issue with initialization order between
-  //                render_panel and VisualizationManager
   render_panel_->getRenderWindow()->initialize();
 
   auto clock = rviz_ros_node.lock()->get_raw_node()->get_clock();
   manager_ = new VisualizationManager(render_panel_, rviz_ros_node, this, clock);
-  manager_->setHelpPath(help_path_);
 
   // Periodically process events for the splash screen.
   if (app_) {app_->processEvents();}
@@ -248,7 +236,7 @@ void FlatlandWindow::initialize(
   splash_ = nullptr;
 
   initialized_ = true;
-  Q_EMIT statusUpdate("RViz is ready.");
+  Q_EMIT statusUpdate("Flatland is ready.");
 
   connect(manager_, SIGNAL(preUpdate()), this, SLOT(updateFps()));
   connect(
@@ -298,12 +286,10 @@ void FlatlandWindow::loadPersistentSettings()
   Config config;
   reader.readFile(config, QString::fromStdString(persistent_settings_file_));
   if (!reader.error()) {
-    QString last_config_dir, last_image_dir;
-    if (config.mapGetString("Last Config Dir", &last_config_dir) &&
-        config.mapGetString("Last Image Dir", &last_image_dir))
+    QString last_config_dir;
+    if (config.mapGetString("Last Config Dir", &last_config_dir))
     {
       last_config_dir_ = last_config_dir.toStdString();
-      last_image_dir_ = last_image_dir.toStdString();
     }
 
     Config recent_configs_list = config.mapGetChild("Recent Configs");
@@ -323,7 +309,6 @@ void FlatlandWindow::savePersistentSettings()
 {
   Config config;
   config.mapSetValue("Last Config Dir", QString::fromStdString(last_config_dir_));
-  config.mapSetValue("Last Image Dir", QString::fromStdString(last_image_dir_));
   Config recent_configs_list = config.mapMakeChild("Recent Configs");
   for (D_string::iterator it = recent_configs_.begin(); it != recent_configs_.end(); ++it) {
     recent_configs_list.listAppendNew().setValue(QString::fromStdString(*it));
@@ -356,7 +341,6 @@ void FlatlandWindow::initMenus()
   this->addAction(file_menu_save_as_action);
 
   recent_configs_menu_ = file_menu_->addMenu("&Recent Configs");
-  file_menu_->addAction("Save &Image", this, SLOT(onSaveImage()));
   file_menu_->addSeparator();
 
   QAction * file_menu_quit_action = file_menu_->addAction(
@@ -510,7 +494,7 @@ void FlatlandWindow::loadDisplayConfig(const QString & qpath)
     if (!QFile(QString::fromStdString(actual_load_path)).exists()) {
       RVIZ_COMMON_LOG_ERROR_STREAM(
           "Default display config '" <<
-                                     actual_load_path.c_str() << "' not found.  RViz will be very empty at first.");
+                                     actual_load_path.c_str() << "' not found.  Flatland will be very empty at first.");
       return;
     }
   }
@@ -549,11 +533,6 @@ void FlatlandWindow::markLoadingDone()
   loading_ = false;
 }
 
-void FlatlandWindow::setImageSaveDirectory(const QString & directory)
-{
-  last_image_dir_ = directory.toStdString();
-}
-
 void FlatlandWindow::setDisplayConfigModified()
 {
   if (!loading_) {
@@ -569,9 +548,9 @@ void FlatlandWindow::setDisplayConfigFile(const std::string & path)
 
   std::string title;
   if (path == default_display_config_file_) {
-    title = "RViz[*]";
+    title = "Flatland Viz[*]";
   } else {
-    title = QDir::toNativeSeparators(QString::fromStdString(path)).toStdString() + "[*] - RViz";
+    title = QDir::toNativeSeparators(QString::fromStdString(path)).toStdString() + "[*] - Flatland Viz";
   }
   setWindowTitle(QString::fromStdString(title));
 }
@@ -721,7 +700,7 @@ void FlatlandWindow::onOpen()
   QString filename = QFileDialog::getOpenFileName(
       this, "Choose a file to open",
       QString::fromStdString(last_config_dir_),
-      "RViz config files (" CONFIG_EXTENSION_WILDCARD ")");
+      "Flatland config files (" CONFIG_EXTENSION_WILDCARD ")");
 
   if (!filename.isEmpty()) {
     if (!QFile(filename).exists()) {
@@ -762,7 +741,7 @@ void FlatlandWindow::onSaveAs()
   QString q_filename = QFileDialog::getSaveFileName(
       this, "Choose a file to save to",
       QString::fromStdString(last_config_dir_),
-      "RViz config files (" CONFIG_EXTENSION_WILDCARD ")");
+      "Flatland config files (" CONFIG_EXTENSION_WILDCARD ")");
 
   if (!q_filename.isEmpty()) {
     if (!q_filename.endsWith("." CONFIG_EXTENSION)) {
@@ -778,10 +757,6 @@ void FlatlandWindow::onSaveAs()
     last_config_dir_ = QDir(q_filename).dirName().toStdString();
     setDisplayConfigFile(filename);
   }
-}
-
-void FlatlandWindow::onSaveImage()
-{
 }
 
 void FlatlandWindow::onRecentConfigSelected()

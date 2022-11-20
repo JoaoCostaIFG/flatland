@@ -40,13 +40,6 @@ class FlatlandWindow : public QMainWindow, public rviz_common::WindowManagerInte
   void
   setApp(QApplication * app);
 
-  /// Set the path to the html help file.
-  /**
-   * Default is a file within the rviz_common package.
-   */
-  void
-  setHelpPath(const QString & help_path);
-
   /// Set the path to the "splash" image file.
   /**
    * This image is shown during initialization and loading of the config file.
@@ -180,10 +173,6 @@ class FlatlandWindow : public QMainWindow, public rviz_common::WindowManagerInte
   void
   onSaveAs();
 
-  /// Handle event to save a screenshot of the current rviz window.
-  void
-  onSaveImage();
-
   /// Handle QActions, often fired when panels are added or removed.
   void
   onRecentConfigSelected();
@@ -248,10 +237,6 @@ class FlatlandWindow : public QMainWindow, public rviz_common::WindowManagerInte
   /// Indicate that loading is done.
   void
   markLoadingDone();
-
-  /// Set the default directory in which to save screenshot images.
-  void
-  setImageSaveDirectory(const QString & directory);
 
   /// Handle request to update the current frames per second (FPS).
   void
@@ -326,20 +311,17 @@ class FlatlandWindow : public QMainWindow, public rviz_common::WindowManagerInte
   std::string display_config_file_;
   std::string default_display_config_file_;
   std::string last_config_dir_;
-  std::string last_image_dir_;
   std::string home_dir_;
 
   QMenu * file_menu_;
   QMenu * recent_configs_menu_;
   QMenu * view_menu_;
-  QMenu * plugins_menu_;
 
   QToolBar * toolbar_;
 
   VisualizationManager * manager_;
 
   std::string package_path_;
-  QString help_path_;
   QString splash_path_;
 
   QSplashScreen * splash_;
