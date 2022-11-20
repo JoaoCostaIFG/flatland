@@ -103,14 +103,6 @@ FlatlandViz::FlatlandViz(FlatlandWindow* parent) : QWidget((QWidget*)parent) {
   // bind toolbar events
   rviz_common::ToolManager* tool_man = manager_->getToolManager();
 
-  connect(manager_, SIGNAL(configChanged()), this,
-          SLOT(setDisplayConfigModified()));
-  connect(tool_man, &rviz_common::ToolManager::toolAdded, this, &FlatlandViz::addTool);
-  connect(tool_man, SIGNAL(toolRefreshed(rviz_common::Tool*)), this,
-          SLOT(refreshTool(rviz_common::Tool*)));
-  connect(tool_man, SIGNAL(toolChanged(rviz_common::Tool*)), this,
-          SLOT(indicateToolIsCurrent(rviz_common::Tool*)));
-
   manager_->initialize();
 
   tool_man->addTool("flatland_viz/SpawnModel");
@@ -153,57 +145,6 @@ FlatlandViz::FlatlandViz(FlatlandWindow* parent) : QWidget((QWidget*)parent) {
   using std::placeholders::_1;
   debug_topic_subscriber_ = node->create_subscription<flatland_msgs::msg::DebugTopicList>(
               "/flatland_server/debug/topics", 0, std::bind(&FlatlandViz::RecieveDebugTopics, this, _1));
-}
-
-// Destructor.
-FlatlandViz::~FlatlandViz() {
-  delete render_panel_;
-  delete manager_;
-}
-
-void FlatlandViz::indicateToolIsCurrent(rviz_common::Tool* tool) {
-  QAction* action = tool_to_action_map_[tool];
-  if (action) {
-    action->setChecked(true);
-  }
-}
-
-void FlatlandViz::setDisplayConfigModified() {
-  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "setDisplayConfigModified called");
-}
-
-void FlatlandViz::addTool(rviz_common::Tool* tool) {
-  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "addTool called");
-  QAction* action = new QAction(tool->getName(), toolbar_actions_);
-  action->setIcon(tool->getIcon());
-  action->setIconText(tool->getName());
-  action->setCheckable(true);
-  toolbar_->addAction(action);
-  action_to_tool_map_[action] = tool;
-  tool_to_action_map_[tool] = action;
-
-  remove_tool_menu_->addAction(tool->getName());
-}
-
-void FlatlandViz::refreshTool(rviz_common::Tool* tool) {
-  QAction* action = tool_to_action_map_[tool];
-  action->setIcon(tool->getIcon());
-  action->setIconText(tool->getName());
-}
-
-void FlatlandViz::setFullScreen(bool full_screen) {
-  // Q_EMIT(fullScreenChange(full_screen));
-
-  if (full_screen) toolbar_visible_ = toolbar_->isVisible();
-  parent_->menuBar()->setVisible(!full_screen);
-  toolbar_->setVisible(!full_screen && toolbar_visible_);
-  parent_->statusBar()->setVisible(!full_screen);
-
-  if (full_screen)
-    setWindowState(windowState() | Qt::WindowFullScreen);
-  else
-    setWindowState(windowState() & ~Qt::WindowFullScreen);
-  show();
 }
 
 void FlatlandViz::RecieveDebugTopics(const flatland_msgs::msg::DebugTopicList::SharedPtr msg) {

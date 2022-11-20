@@ -110,11 +110,6 @@ class FlatlandViz : public QWidget {
    */
   void RecieveDebugTopics(const flatland_msgs::msg::DebugTopicList::SharedPtr msg);
 
-  /**
-   * @brief Destruct
-   */
-  virtual ~FlatlandViz();
-
   void enableInteractiveMarkers(bool enabled) {
     this->interactive_markers_->setEnabled(enabled);
   }
@@ -150,15 +145,7 @@ class FlatlandViz : public QWidget {
   /// Indicates if the toolbar should be visible outside of fullscreen mode.
   bool toolbar_visible_;
 
-  // protected Q_SLOTS:
-  void fullScreenChange(bool hidden);
-
-  void setDisplayConfigModified();
-  void addTool(rviz_common::Tool*);
-  void refreshTool(rviz_common::Tool*);
-  void indicateToolIsCurrent(rviz_common::Tool*);
   void openNewToolDialog();
-  void setFullScreen(bool full_screen);
 };
 
 #endif  // FLATLAND_VIZ_FLATLAND_VIZ_H

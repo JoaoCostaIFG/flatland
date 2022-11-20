@@ -782,6 +782,7 @@ void FlatlandWindow::onRecentConfigSelected()
 
 void FlatlandWindow::addTool(Tool * tool)
 {
+  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "addTool called");
   QAction * action = new QAction(tool->getName(), toolbar_actions_);
   action->setIcon(tool->getIcon());
   action->setIconText(tool->getName());
