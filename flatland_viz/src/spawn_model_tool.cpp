@@ -59,6 +59,7 @@
 
 #include <rviz_common/viewport_mouse_event.hpp>
 #include <rviz_common/render_panel.hpp>
+#include <rviz_common/display_context.hpp>
 #include <rviz_rendering/viewport_projection_finder.hpp>
 
 
