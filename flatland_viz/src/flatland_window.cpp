@@ -4,7 +4,6 @@
 #include <fstream>
 #include <memory>
 #include <string>
-#include <utility>
 
 #include <OgreRenderWindow.h>
 #include <OgreMeshManager.h>
@@ -27,13 +26,8 @@
 #include <QToolBar>  // NOLINT cpplint cannot handle include order here
 #include <QToolButton>  // NOLINT cpplint cannot handle include order here
 
-#include <rclcpp/clock.hpp>
-#include <tf2_ros/buffer.h>
-#include <tf2_ros/transform_listener.h>
-
 #include <rviz_common/load_resource.hpp>
 #include <rviz_common/logging.hpp>
-#include <rviz_common/panel.hpp>
 #include <rviz_common/panel_dock_widget.hpp>
 #include <rviz_common/render_panel.hpp>
 #include <rviz_common/tool.hpp>
@@ -54,14 +48,12 @@ FlatlandWindow::FlatlandWindow(
     : QMainWindow(parent),
       app_(nullptr),
       render_panel_(nullptr),
-      show_help_action_(nullptr),
       file_menu_(nullptr),
       recent_configs_menu_(nullptr),
       toolbar_(nullptr),
       manager_(nullptr),
       splash_(nullptr),
       toolbar_actions_(nullptr),
-      show_choose_new_master_option_(false),
       add_tool_action_(nullptr),
       remove_tool_menu_(nullptr),
       initialized_(false),
@@ -82,12 +74,6 @@ FlatlandWindow::FlatlandWindow(
   QDir splash_path(QString::fromStdString(package_path_) + "/images/splash.png");
   splash_path_ = splash_path.absolutePath();
 
-  auto * reset_button = new QToolButton();
-  reset_button->setText("Reset");
-  reset_button->setContentsMargins(0, 0, 0, 0);
-  statusBar()->addPermanentWidget(reset_button, 0);
-  connect(reset_button, SIGNAL(clicked(bool)), this, SLOT(reset()));
-
   status_label_ = new QLabel("");
   statusBar()->addPermanentWidget(status_label_, 1);
   connect(this, SIGNAL(statusUpdate(const QString&)), status_label_, SLOT(setText(const QString&)));
@@ -105,10 +91,6 @@ FlatlandWindow::~FlatlandWindow()
 {
   delete manager_;
   delete render_panel_;
-
-  for (auto & custom_panel : custom_panels_) {
-    delete custom_panel.dock;
-  }
 }
 
 rviz_rendering::RenderWindow * FlatlandWindow::getRenderWindow()
@@ -157,26 +139,6 @@ void FlatlandWindow::leaveEvent(QEvent * event)
   setStatus("");
 }
 
-void FlatlandWindow::reset()
-{
-  Ogre::MeshManager::getSingleton().removeAll();
-  manager_->resetTime();
-}
-
-#if 0
-void FlatlandWindow::changeMaster()
-{
-  if (prepareToExit()) {
-    QApplication::exit(255);
-  }
-}
-
-void FlatlandWindow::setShowChooseNewMaster(bool show)
-{
-  show_choose_new_master_option_ = show;
-}
-#endif
-
 void FlatlandWindow::setHelpPath(const QString & help_path)
 {
   help_path_ = help_path;
@@ -222,30 +184,7 @@ void FlatlandWindow::initialize(
 
   render_panel_ = new RenderPanel(central_widget);
 
-  hide_left_dock_button_ = new QToolButton();
-  hide_left_dock_button_->setContentsMargins(0, 0, 0, 0);
-  hide_left_dock_button_->setArrowType(Qt::LeftArrow);
-  hide_left_dock_button_->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding));
-  hide_left_dock_button_->setFixedWidth(16);
-  hide_left_dock_button_->setAutoRaise(true);
-  hide_left_dock_button_->setCheckable(true);
-
-  connect(hide_left_dock_button_, SIGNAL(toggled(bool)), this, SLOT(hideLeftDock(bool)));
-
-  hide_right_dock_button_ = new QToolButton();
-  hide_right_dock_button_->setContentsMargins(0, 0, 0, 0);
-  hide_right_dock_button_->setArrowType(Qt::RightArrow);
-  hide_right_dock_button_->setSizePolicy(
-      QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding));
-  hide_right_dock_button_->setFixedWidth(16);
-  hide_right_dock_button_->setAutoRaise(true);
-  hide_right_dock_button_->setCheckable(true);
-
-  connect(hide_right_dock_button_, SIGNAL(toggled(bool)), this, SLOT(hideRightDock(bool)));
-
-  central_layout->addWidget(hide_left_dock_button_, 0);
   central_layout->addWidget(render_panel_, 1);
-  central_layout->addWidget(hide_right_dock_button_, 0);
 
   central_widget->setLayout(central_layout);
 
@@ -418,10 +357,6 @@ void FlatlandWindow::initMenus()
 
   recent_configs_menu_ = file_menu_->addMenu("&Recent Configs");
   file_menu_->addAction("Save &Image", this, SLOT(onSaveImage()));
-  if (show_choose_new_master_option_) {
-    file_menu_->addSeparator();
-    file_menu_->addAction("Change &Master", this, SLOT(changeMaster()));
-  }
   file_menu_->addSeparator();
 
   QAction * file_menu_quit_action = file_menu_->addAction(
@@ -430,10 +365,6 @@ void FlatlandWindow::initMenus()
   this->addAction(file_menu_quit_action);
 
   view_menu_ = menuBar()->addMenu("&Panels");
-  view_menu_->addAction("Add &New Panel", this, SLOT(openNewPanelDialog()));
-  delete_view_menu_ = view_menu_->addMenu("&Delete Panel");
-  delete_view_menu_->setEnabled(false);
-
   QAction * fullscreen_action = view_menu_->addAction(
       "&Fullscreen", this, SLOT(
       setFullScreen(bool)), Qt::Key_F11);
@@ -445,8 +376,7 @@ void FlatlandWindow::initMenus()
   view_menu_->addSeparator();
 
   QMenu * help_menu = menuBar()->addMenu("&Help");
-  help_menu->addAction("Show &Help panel", this, SLOT(showHelpPanel()));
-  help_menu->addAction("Open rviz wiki in browser", this, SLOT(onHelpWiki()));
+  help_menu->addAction("Open Flatland wiki in browser", this, SLOT(onHelpWiki()));
   help_menu->addSeparator();
   help_menu->addAction("&About", this, SLOT(onHelpAbout()));
 }
@@ -505,63 +435,6 @@ void FlatlandWindow::hideDockImpl(Qt::DockWidgetArea area, bool hide)
       (*it)->setAllowedAreas((*it)->allowedAreas() | area);
     }
   }
-}
-
-void FlatlandWindow::setHideButtonVisibility(bool visible)
-{
-  hide_left_dock_button_->setVisible(visible);
-  hide_right_dock_button_->setVisible(visible);
-}
-
-void FlatlandWindow::hideLeftDock(bool hide)
-{
-  hideDockImpl(Qt::LeftDockWidgetArea, hide);
-  hide_left_dock_button_->setArrowType(hide ? Qt::RightArrow : Qt::LeftArrow);
-}
-
-void FlatlandWindow::hideRightDock(bool hide)
-{
-  hideDockImpl(Qt::RightDockWidgetArea, hide);
-  hide_right_dock_button_->setArrowType(hide ? Qt::LeftArrow : Qt::RightArrow);
-}
-
-void FlatlandWindow::onDockPanelVisibilityChange(bool visible)
-{
-  // if a dock widget becomes visible and is resting inside the
-  // left or right dock area, we want to unhide the whole area
-  if (visible) {
-    QDockWidget * dock_widget = dynamic_cast<QDockWidget *>(sender());
-    if (dock_widget) {
-      Qt::DockWidgetArea area = dockWidgetArea(dock_widget);
-      if (area == Qt::LeftDockWidgetArea) {
-        hide_left_dock_button_->setChecked(false);
-      }
-      if (area == Qt::RightDockWidgetArea) {
-        hide_right_dock_button_->setChecked(false);
-      }
-    }
-  }
-}
-
-void FlatlandWindow::openNewPanelDialog()
-{
-  QString class_id;
-  QString display_name;
-  QStringList empty;
-
-  /*
-  NewObjectDialog * dialog = new NewObjectDialog(
-      panel_factory_,
-      "Panel",
-      empty,
-      empty,
-      &class_id,
-      &display_name,
-      this);
-  if (dialog->exec() == QDialog::Accepted) {
-    addPanelByName(display_name, class_id);
-  }
-   */
 }
 
 void FlatlandWindow::openNewToolDialog()
@@ -730,14 +603,12 @@ QString FlatlandWindow::getErrorMessage() const
 void FlatlandWindow::save(Config config)
 {
   manager_->save(config.mapMakeChild("Visualization Manager"));
-  savePanels(config.mapMakeChild("Panels"));
   saveWindowGeometry(config.mapMakeChild("Window Geometry"));
 }
 
 void FlatlandWindow::load(const Config & config)
 {
   manager_->load(config.mapGetChild("Visualization Manager"));
-  loadPanels(config.mapGetChild("Panels"));
   loadWindowGeometry(config.mapGetChild("Window Geometry"));
 }
 
@@ -774,14 +645,6 @@ void FlatlandWindow::loadWindowGeometry(const Config & config)
       (*it)->load(itConfig);
     }
   }
-
-  bool b;
-  config.mapGetBool("Hide Left Dock", &b);
-  hide_left_dock_button_->setChecked(b);
-  hideLeftDock(b);
-  config.mapGetBool("Hide Right Dock", &b);
-  hideRightDock(b);
-  hide_right_dock_button_->setChecked(b);
 }
 
 void FlatlandWindow::saveWindowGeometry(Config config)
@@ -794,9 +657,6 @@ void FlatlandWindow::saveWindowGeometry(Config config)
   QByteArray window_state = saveState().toHex();
   config.mapSetValue("QMainWindow State", window_state.constData());
 
-  config.mapSetValue("Hide Left Dock", hide_left_dock_button_->isChecked());
-  config.mapSetValue("Hide Right Dock", hide_right_dock_button_->isChecked());
-
   // save panel dock widget states (collapsed or not)
   QList<PanelDockWidget *> dock_widgets = findChildren<PanelDockWidget *>();
 
@@ -804,35 +664,6 @@ void FlatlandWindow::saveWindowGeometry(Config config)
        it++)
   {
     (*it)->save(config.mapMakeChild((*it)->windowTitle()));
-  }
-}
-
-void FlatlandWindow::loadPanels(const Config & config)
-{
-  // First destroy any existing custom panels.
-  for (int i = 0; i < custom_panels_.size(); i++) {
-    delete custom_panels_[i].dock;
-    delete custom_panels_[i].delete_action;
-  }
-  custom_panels_.clear();
-
-  // Then load the ones in the config.
-  int num_custom_panels = config.listLength();
-  for (int i = 0; i < num_custom_panels; i++) {
-    Config panel_config = config.listChildAt(i);
-
-    QString class_id, name;
-  }
-}
-
-void FlatlandWindow::savePanels(Config config)
-{
-  // Not really necessary, but gives an empty list if there are no entries,
-  // instead of an Empty config node.
-  config.setType(Config::List);
-
-  for (int i = 0; i < custom_panels_.size(); i++) {
-    custom_panels_[i].panel->save(config.listAppendNew());
   }
 }
 
@@ -1039,28 +870,16 @@ void FlatlandWindow::indicateToolIsCurrent(Tool * tool)
   }
 }
 
-void FlatlandWindow::showHelpPanel()
-{
-  if (!show_help_action_) {
-  } else {
-    show_help_action_->trigger();
-  }
-}
-
-void FlatlandWindow::onHelpDestroyed()
-{
-  show_help_action_ = nullptr;
-}
-
 void FlatlandWindow::onHelpWiki()
 {
-  QDesktopServices::openUrl(QUrl("http://www.ros.org/wiki/rviz"));
+  QDesktopServices::openUrl(QUrl("https://flatland-simulator.readthedocs.io/en/latest/"));
 }
 
 void FlatlandWindow::onHelpAbout()
 {
   QString about_text = QString(
-      "This is RViz version %1 (%2).\n"
+      "This is Flatland for ROS 2.\n"
+      "Using RViz version %1 (%2).\n"
       "\n"
       "Compiled against Qt version %3."
       "\n"
@@ -1080,31 +899,6 @@ QWidget * FlatlandWindow::getParentWindow()
   return this;
 }
 
-void FlatlandWindow::onDeletePanel()
-{
-  // This should only be called as a SLOT from a QAction in the
-  // "delete panel" submenu, so the sender will be one of the QActions
-  // stored as "delete_action" in a PanelRecord.  This code looks for
-  // a delete_action in custom_panels_ matching sender() and removes
-  // the panel associated with it.
-  if (QAction * action = qobject_cast<QAction *>(sender())) {
-    for (int i = 0; i < custom_panels_.size(); i++) {
-      if (custom_panels_[i].delete_action == action) {
-        delete custom_panels_[i].dock;
-        custom_panels_.removeAt(i);
-        setDisplayConfigModified();
-        action->deleteLater();
-        if (delete_view_menu_->actions().size() == 1 &&
-            delete_view_menu_->actions().first() == action)
-        {
-          delete_view_menu_->setEnabled(false);
-        }
-        return;
-      }
-    }
-  }
-}
-
 void FlatlandWindow::setFullScreen(bool full_screen)
 {
   auto state = windowState();
@@ -1120,7 +914,6 @@ void FlatlandWindow::setFullScreen(bool full_screen)
   menuBar()->setVisible(!full_screen);
   toolbar_->setVisible(!full_screen && toolbar_visible_);
   statusBar()->setVisible(!full_screen);
-  setHideButtonVisibility(!full_screen);
 
   if (full_screen) {
     setWindowState(state | Qt::WindowFullScreen);
@@ -1148,7 +941,6 @@ PanelDockWidget * FlatlandWindow::addPane(
   addDockWidget(area, dock);
 
   // we want to know when that panel becomes visible
-  connect(dock, SIGNAL(visibilityChanged(bool)), this, SLOT(onDockPanelVisibilityChange(bool)));
   connect(this, SIGNAL(fullScreenChange(bool)), dock, SLOT(overrideVisibility(bool)));
 
   QAction * toggle_action = dock->toggleViewAction();
@@ -1156,10 +948,6 @@ PanelDockWidget * FlatlandWindow::addPane(
 
   connect(toggle_action, SIGNAL(triggered(bool)), this, SLOT(setDisplayConfigModified()));
   connect(dock, SIGNAL(closed()), this, SLOT(setDisplayConfigModified()));
-
-  // repair/update visibility status
-  hideLeftDock(area == Qt::LeftDockWidgetArea ? false : hide_left_dock_button_->isChecked());
-  hideRightDock(area == Qt::RightDockWidgetArea ? false : hide_right_dock_button_->isChecked());
 
   return dock;
 }

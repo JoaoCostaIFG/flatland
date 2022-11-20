@@ -40,13 +40,6 @@ class FlatlandWindow : public QMainWindow, public rviz_common::WindowManagerInte
   void
   setApp(QApplication * app);
 
-  // TODO(wjwwood): figure out how to preserve the "choost new master" feature
-#if 0
-  /// Call this before initialize() to have it take effect.
-  void
-  setShowChooseNewMaster(bool show);
-#endif
-
   /// Set the path to the html help file.
   /**
    * Default is a file within the rviz_common package.
@@ -63,11 +56,11 @@ class FlatlandWindow : public QMainWindow, public rviz_common::WindowManagerInte
   void
   setSplashPath(const QString & splash_path);
 
-  /// Initialize the VisualizationFrame and create the VisualizationManager.
+  /// Initialize
   /**
    * This function must be called before load(), save(), getManager(),
-   * or addPanelByName(), because it creates the VisualizationManager
-   * instance which those calls depend on.
+   * because it creates the VisualizationManager instance which those
+   * calls depend on.
    *
    * This function also calls VisualizationManager::initialize(),
    * which means it will start the update timer and generally get
@@ -156,10 +149,6 @@ class FlatlandWindow : public QMainWindow, public rviz_common::WindowManagerInte
   void
   save(Config config);
 
-  /// Hide or show the hide-dock buttons.
-  void
-  setHideButtonVisibility(bool visible);
-
  public Q_SLOTS:
   /// Notification that something would change in the display config if saved.
   void
@@ -207,17 +196,9 @@ class FlatlandWindow : public QMainWindow, public rviz_common::WindowManagerInte
   void
   onHelpAbout();
 
-  /// Handle event to open the new panel dialog.
-  void
-  openNewPanelDialog();
-
   /// Handle event to open the new tool dialog.
   void
   openNewToolDialog();
-
-  /// Handle event to show the help panel.
-  void
-  showHelpPanel();
 
   /// Remove a the tool whose name is given by remove_tool_menu_action->text().
   void
@@ -256,25 +237,6 @@ class FlatlandWindow : public QMainWindow, public rviz_common::WindowManagerInte
   void
   indicateToolIsCurrent(Tool * tool);
 
-  // TODO(wjwwood): figure out how to reenable this, or how it might be useful in ROS 2
-#if 0
-  /// Restart rviz with a new master.
-  /**
-   * Save the current state and quit with exit code 255 to signal the wrapper
-   * that we would like to restart with a different ROS master URI.
-   */
-  void
-  changeMaster();
-#endif
-
-  /// Delete a panel widget.
-  /**
-   * The sender() of the signal should be a QAction whose text() is
-   * the name of the panel.
-   */
-  void
-  onDeletePanel();
-
   /// Set full screen mode.
   void
   setFullScreen(bool full_screen);
@@ -290,32 +252,6 @@ class FlatlandWindow : public QMainWindow, public rviz_common::WindowManagerInte
   /// Set the default directory in which to save screenshot images.
   void
   setImageSaveDirectory(const QString & directory);
-
-  /// Reset the render window.
-  /**
-   * This will clear the loaded meshes, reset any time tracking, and possibly
-   * other things.
-   */
-  void
-  reset();
-
-  // TODO(wjwwood): figure out if this is needed
-  /// Handle event when the help dialog is closed.
-  void
-  onHelpDestroyed();
-
-  /// Hide the left dock area.
-  void
-  hideLeftDock(bool hide);
-
-  /// Hide the right dock area.
-  void
-  hideRightDock(bool hide);
-
-  /// Handle event when the dock panel visibility changes.
-  virtual
-  void
-  onDockPanelVisibilityChange(bool visible);
 
   /// Handle request to update the current frames per second (FPS).
   void
@@ -359,14 +295,6 @@ class FlatlandWindow : public QMainWindow, public rviz_common::WindowManagerInte
   void
   updateRecentConfigMenu();
 
-  /// Loads custom panels from the given Config object.
-  void
-  loadPanels(const Config & config);
-
-  /// Saves custom panels to the given Config object.
-  void
-  savePanels(Config config);
-
   /// Restore the window's geometry from the given Config object.
   void
   loadWindowGeometry(const Config & config);
@@ -393,11 +321,6 @@ class FlatlandWindow : public QMainWindow, public rviz_common::WindowManagerInte
   /// Actual panel where the main 3D scene is rendered.
   RenderPanel * render_panel_;
 
-  // TODO(wjwwood): setup this class with a PIMPL class to hide all these
-  //                implementation variables, to make it easier to provide
-  //                ABI compatibility in the future
-  QAction * show_help_action_;
-
   std::string config_dir_;
   std::string persistent_settings_file_;
   std::string display_config_file_;
@@ -409,7 +332,6 @@ class FlatlandWindow : public QMainWindow, public rviz_common::WindowManagerInte
   QMenu * file_menu_;
   QMenu * recent_configs_menu_;
   QMenu * view_menu_;
-  QMenu * delete_view_menu_;
   QMenu * plugins_menu_;
 
   QToolBar * toolbar_;
@@ -428,20 +350,6 @@ class FlatlandWindow : public QMainWindow, public rviz_common::WindowManagerInte
   QActionGroup * toolbar_actions_;
   std::map<QAction *, Tool *> action_to_tool_map_;
   std::map<Tool *, QAction *> tool_to_action_map_;
-  bool show_choose_new_master_option_;
-
-  QToolButton * hide_left_dock_button_;
-  QToolButton * hide_right_dock_button_;
-
-  struct PanelRecord
-  {
-    Panel * panel;
-    PanelDockWidget * dock;
-    QString name;
-    QString class_id;
-    QAction * delete_action;
-  };
-  QList<PanelRecord> custom_panels_;
 
   QAction * add_tool_action_;
   QMenu * remove_tool_menu_;
