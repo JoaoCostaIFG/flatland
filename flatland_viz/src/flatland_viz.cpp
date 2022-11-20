@@ -102,7 +102,7 @@ FlatlandViz::FlatlandViz(FlatlandWindow* parent) : QWidget((QWidget*)parent) {
   manager_ = new rviz_common::VisualizationManager(render_panel_);
   // TODO fix
   //manager_ = new rviz_common::VisualizationManager(render_panel_, nullptr, , rclcpp::Clock());
-  render_panel_->initialize(manager_->getSceneManager(), manager_);
+  render_panel_->initialize(manager_);
 
   // bind toolbar events
   rviz_common::ToolManager* tool_man = manager_->getToolManager();
