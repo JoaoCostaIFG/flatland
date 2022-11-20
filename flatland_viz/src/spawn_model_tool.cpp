@@ -69,6 +69,7 @@
 
 #include <yaml-cpp/yaml.h>
 
+using namespace std::chrono_literals;
 
 class DialogOptionsWidget;
 
@@ -174,7 +175,7 @@ void SpawnModelTool::SpawnModelInFlatland() {
       "SpawnModelTool::SpawnModelInFlatland name:" << model_name.toStdString());
   auto srv = std::make_shared<flatland_msgs::srv::SpawnModel::Request>();
 
-  // model names can not have embeded period char
+  // model names can not have embedded period char
   model_name = model_name.replace(".", "_", Qt::CaseSensitive);
 
   // fill in the service request
@@ -185,22 +186,23 @@ void SpawnModelTool::SpawnModelInFlatland() {
   srv->pose.y = intersection[1];
   srv->pose.theta = initial_angle;
 
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("spawn_model_tool");  // TODO
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("spawn_model_tool");
   client = node->create_client<flatland_msgs::srv::SpawnModel>("spawn_model");
 
-  // make ros service call
-  bool client_is_running = client->call(srv);
-
-  if (!client_is_running) {
-    QMessageBox msgBox;
-    msgBox.setText("Error: You must have a client running.");
-    msgBox.exec();
-  } else {
-      if (!srv->success) {
-      QMessageBox msgBox;
-      msgBox.setText(srv->message.c_str());
-      msgBox.exec();
+  while (!client->wait_for_service(1s)) {
+    if (!rclcpp::ok()) {
+      RCLCPP_ERROR(rclcpp::get_logger("SpawnModelTool"), "Interrupted while waiting for the service. Exiting.");
+      return;
     }
+    RCLCPP_INFO(rclcpp::get_logger("SpawnModelTool"), "service not available, waiting again...");
+  }
+
+  // make ros service call
+  auto result = client->async_send_request(srv);
+  // Wait for the result.
+  if (rclcpp::spin_until_future_complete(node, result) !=
+      rclcpp::FutureReturnCode::SUCCESS) {
+    RCLCPP_ERROR(rclcpp::get_logger("SpawnModelTool"), "Failed to call service add_two_ints");
   }
 }
 

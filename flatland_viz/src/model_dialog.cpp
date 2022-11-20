@@ -60,7 +60,7 @@ QColor ModelDialog::saved_color_;
 
 QString ModelDialog::SelectFile() {
   QString fileName =
-      QFileDialog::getOpenFileName(this, tr("Open model file"), "", "");
+      QFileDialog::getOpenFileName(this, tr("Open model file"));
   if (fileName.isEmpty())
     return fileName;
   else {

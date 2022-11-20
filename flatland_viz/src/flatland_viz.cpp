@@ -346,7 +346,7 @@ void FlatlandViz::onToolbarRemoveTool(QAction* remove_tool_menu_action) {
   for (int i = 0; i < manager_->getToolManager()->numTools(); i++) {
     rviz_common::Tool* tool = manager_->getToolManager()->getTool(i);
     if (tool->getName() == name) {
-      RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "Removing --------> ", name.toStdString().c_str());
+      RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "%s %s", "Removing -------->", name.toStdString().c_str());
       manager_->getToolManager()->removeTool(i);
       removeTool(tool);
       return;

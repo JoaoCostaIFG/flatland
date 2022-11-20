@@ -61,7 +61,7 @@
 #include <rviz_common/properties/float_property.hpp>
 #include <rviz_common/properties/vector_property.hpp>
 #include <rviz_common/viewport_mouse_event.hpp>
-#include <rviz_common/visualization_manager.h>
+#include <rviz_common/visualization_manager.hpp>
 
 #include <QCheckBox>
 #include <QCursor>
