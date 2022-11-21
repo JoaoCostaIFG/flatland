@@ -68,7 +68,6 @@
 #include <rviz_common/tool_manager.hpp>
 #include <rviz_common/window_manager_interface.hpp>
 
-
 #include <rviz_common/display.hpp>
 #include <rviz_common/render_panel.hpp>
 #include <rviz_common/view_manager.hpp>
@@ -95,55 +94,39 @@ class WidgetGeometryChangeDetector;
 class FlatlandWindow;
 
 class FlatlandViz : public QWidget {
-  Q_OBJECT public :
-      /**
-        * @brief Construct FlatlandViz and subscribe to debug topic list
-        *
-        * @param parent The parent widget
-        */
-      FlatlandViz(FlatlandWindow* parent = 0);
+ Q_OBJECT
+
+ public :
+  /**
+    * @brief Construct FlatlandViz and subscribe to debug topic list
+    *
+    * @param parent The parent widget
+    *
+    * @param rviz_ros_node Main node of flatland
+    */
+  FlatlandViz(rviz_common::ros_integration::RosNodeAbstractionIface::WeakPtr rviz_ros_node, FlatlandWindow *parent = 0);
 
   /**
-   * @brief Recieve a new DebugTopicList msg and add any new displays required
-   *
-   * @param msg The DebugTopicList message
-   */
+ * @brief Recieve a new DebugTopicList msg and add any new displays required
+ *
+ * @param msg The DebugTopicList message
+ */
   void RecieveDebugTopics(const flatland_msgs::msg::DebugTopicList::SharedPtr msg);
 
   void enableInteractiveMarkers(bool enabled) {
     this->interactive_markers_->setEnabled(enabled);
   }
 
-  rviz_common::VisualizationManager* manager_;
+  void initialize();
 
  private:
-  rviz_common::RenderPanel* render_panel_;
 
-  rviz_common::Display* grid_;
-  rviz_common::Display* interactive_markers_;
-  std::map<std::string, rviz_common::Display*> debug_displays_;
+  FlatlandWindow *parent_;
+  rviz_common::ros_integration::RosNodeAbstractionIface::WeakPtr node_;
+  rviz_common::Display *interactive_markers_;
+  std::map<std::string, rviz_common::Display *> debug_displays_;
   rclcpp::Subscription<flatland_msgs::msg::DebugTopicList>::SharedPtr debug_topic_subscriber_;
-  rviz_common::properties::PropertyTreeWidget * tree_widget_;
-  FlatlandWindow* parent_;
-
-  QMenu* file_menu_;
-  QMenu* recent_configs_menu_;
-  QMenu* view_menu_;
-  QMenu* delete_view_menu_;
-  QMenu* plugins_menu_;
-
-  QToolBar* toolbar_;
-
-  QActionGroup* toolbar_actions_;
-  std::map<QAction*, rviz_common::Tool*> action_to_tool_map_;
-  std::map<rviz_common::Tool*, QAction*> tool_to_action_map_;
-  bool show_choose_new_master_option_;
-
-  QAction* add_tool_action_;
-  QMenu* remove_tool_menu_;
-
-  /// Indicates if the toolbar should be visible outside of fullscreen mode.
-  bool toolbar_visible_;
+  rviz_common::properties::PropertyTreeWidget *tree_widget_;
 
   void openNewToolDialog();
 };

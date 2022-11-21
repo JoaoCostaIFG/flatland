@@ -168,15 +168,15 @@ void FlatlandWindow::initialize(
   // Periodically process events for the splash screen.
   if (app_) {app_->processEvents();}
 
-  QWidget * central_widget = new QWidget(this);
-  render_panel_ = new RenderPanel(central_widget);
+  viz_ = new FlatlandViz(rviz_ros_node, this);
+  render_panel_ = new RenderPanel(viz_);
 
   QVBoxLayout * central_layout = new QVBoxLayout;
   central_layout->setSpacing(0);
   central_layout->setMargin(0);
   central_layout->addWidget(render_panel_); /* TODO should this use stretch: 1 ? */
 
-  central_widget->setLayout(central_layout);
+  viz_->setLayout(central_layout);
 
   // Periodically process events for the splash screen.
   if (app_) {app_->processEvents();}
@@ -191,7 +191,7 @@ void FlatlandWindow::initialize(
   // Periodically process events for the splash screen.
   if (app_) {app_->processEvents();}
 
-  setCentralWidget(central_widget);
+  setCentralWidget(viz_);
 
   // Periodically process events for the splash screen.
   if (app_) {app_->processEvents();}

@@ -75,10 +75,13 @@
 #include "flatland_viz/flatland_viz.h"
 
 // Constructor.
-FlatlandViz::FlatlandViz(FlatlandWindow* parent) : QWidget((QWidget*)parent) {
+FlatlandViz::FlatlandViz(ros_integration::RosNodeAbstractionIface::WeakPtr rviz_ros_node, FlatlandWindow *parent)
+    : QWidget((QWidget *) parent), parent_ (parent), node_(rviz_ros_node) {}
+
+void FlatlandViz::initialize() {
   // Create interactive markers display
   interactive_markers_ =
-      manager_->createDisplay("rviz/InteractiveMarkers", "Move Objects", false);
+      parent_->getManager()->createDisplay("rviz/InteractiveMarkers", "Move Objects", false);
   if (interactive_markers_ == nullptr) {
     RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Interactive markers failed to instantiate");
     exit(1);
@@ -86,19 +89,19 @@ FlatlandViz::FlatlandViz(FlatlandWindow* parent) : QWidget((QWidget*)parent) {
   interactive_markers_->subProp("Update Topic")
       ->setValue("/interactive_model_markers/update");
 
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("flatland_viz");
 
   // Subscribe to debug topics topic
   using std::placeholders::_1;
-  debug_topic_subscriber_ = node->create_subscription<flatland_msgs::msg::DebugTopicList>(
-              "/flatland_server/debug/topics", 0, std::bind(&FlatlandViz::RecieveDebugTopics, this, _1));
+  debug_topic_subscriber_ =
+      node_.lock()->get_raw_node()->create_subscription<flatland_msgs::msg::DebugTopicList>(
+          "/flatland_server/debug/topics", 0, std::bind(&FlatlandViz::RecieveDebugTopics, this, _1));
 }
 
 void FlatlandViz::RecieveDebugTopics(const flatland_msgs::msg::DebugTopicList::SharedPtr msg) {
   std::vector<std::string> topics = msg->topics;
 
   // check for deleted topics
-  for (auto& topic : debug_displays_) {
+  for (auto &topic : debug_displays_) {
     if (std::count(topics.begin(), topics.end(), topic.first) == 0) {
       delete debug_displays_[topic.first];
       debug_displays_.erase(topic.first);
@@ -106,10 +109,10 @@ void FlatlandViz::RecieveDebugTopics(const flatland_msgs::msg::DebugTopicList::S
   }
 
   // check for new topics
-  for (const auto& topic : topics) {
+  for (const auto &topic : topics) {
     if (debug_displays_.count(topic) == 0) {
       // Create the marker display and set its topic
-      debug_displays_[topic] = manager_->createDisplay(
+      debug_displays_[topic] = parent_->getManager()->createDisplay(
           "rviz/MarkerArray", QString::fromLocal8Bit(topic.c_str()), true);
       if (debug_displays_[topic] == nullptr) {
         RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "MarkerArray failed to instantiate");
