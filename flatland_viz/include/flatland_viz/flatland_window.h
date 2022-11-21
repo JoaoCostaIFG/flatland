@@ -105,9 +105,6 @@ class FlatlandWindow : public QMainWindow, public rviz_common::WindowManagerInte
   void
   loadDisplayConfig(const QString & path);
 
-  // TODO(wjwwood): consider changing this function to raise an exception
-  //                when there is a failure, rather than the getErrorMessage()
-  //                mechanism, unless there is a good reason for it.
   /// Save display settings to the given file.
   /**
    * On failure, also sets error_message_ with information about the

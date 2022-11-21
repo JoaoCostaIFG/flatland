@@ -76,19 +76,26 @@
 
 // Constructor.
 FlatlandViz::FlatlandViz(ros_integration::RosNodeAbstractionIface::WeakPtr rviz_ros_node, FlatlandWindow *parent)
-    : QWidget((QWidget *) parent), parent_ (parent), node_(rviz_ros_node) {}
+    : QWidget((QWidget *) parent), parent_(parent), node_(rviz_ros_node) {}
 
 void FlatlandViz::initialize() {
+  auto manager = parent_->getManager();
+
   // Create interactive markers display
   interactive_markers_ =
-      parent_->getManager()->createDisplay("rviz/InteractiveMarkers", "Move Objects", false);
+      manager->createDisplay("rviz_default_plugins/InteractiveMarkers", "Move Objects", false);
   if (interactive_markers_ == nullptr) {
     RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Interactive markers failed to instantiate");
     exit(1);
   }
-  interactive_markers_->subProp("Update Topic")
-      ->setValue("/interactive_model_markers/update");
-
+  interactive_markers_->initialize(manager);
+  // TODO fix this: Update Topic doesn't exist
+  // Interactive Markers Namespace
+  // Show Descriptions
+  // Show Axes
+  // Show Visual Aids
+  // Enable Transparency
+  //interactive_markers_->subProp("Update Topic")->setValue("/interactive_model_markers/update");
 
   // Subscribe to debug topics topic
   using std::placeholders::_1;
@@ -113,7 +120,7 @@ void FlatlandViz::RecieveDebugTopics(const flatland_msgs::msg::DebugTopicList::S
     if (debug_displays_.count(topic) == 0) {
       // Create the marker display and set its topic
       debug_displays_[topic] = parent_->getManager()->createDisplay(
-          "rviz/MarkerArray", QString::fromLocal8Bit(topic.c_str()), true);
+          "rviz_default_plugins/MarkerArray", QString::fromLocal8Bit(topic.c_str()), true);
       if (debug_displays_[topic] == nullptr) {
         RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "MarkerArray failed to instantiate");
         exit(1);

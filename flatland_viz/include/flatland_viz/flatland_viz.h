@@ -126,7 +126,6 @@ class FlatlandViz : public QWidget {
   rviz_common::Display *interactive_markers_;
   std::map<std::string, rviz_common::Display *> debug_displays_;
   rclcpp::Subscription<flatland_msgs::msg::DebugTopicList>::SharedPtr debug_topic_subscriber_;
-  rviz_common::properties::PropertyTreeWidget *tree_widget_;
 
   void openNewToolDialog();
 };

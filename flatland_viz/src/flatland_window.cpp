@@ -205,6 +205,7 @@ void FlatlandWindow::initialize(
   if (app_) {app_->processEvents();}
 
   render_panel_->initialize(manager_);
+  viz_->initialize();
 
   // Periodically process events for the splash screen.
   if (app_) {app_->processEvents();}
